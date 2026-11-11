@@ -1,0 +1,216 @@
+name: tales
+
+x-server: &server
+  image: &image ghcr.io/milten21/top/server:sha-edf6922
+  platform: linux/386
+  restart: unless-stopped
+  stdin_open: true
+  tty: true
+  ulimits:
+    core: -1
+  depends_on:
+    db-init:
+      condition: service_completed_successfully
+      required: false
+
+x-game-environment: &game-environment
+  GATE_HOST: ${GATE_HOST:-gate}
+  GATE_GAME_PORT: ${GATE_GAME_PORT:-1971}
+  DB_HOST: ${DB_HOST:-postgres}
+  DB_PORT: ${DB_PORT:-5432}
+  GAME_DB_NAME: ${GAME_DB_NAME:-GameDB}
+  GAME_DB_USER: ${GAME_DB_USER:-pko_game}
+  GAME_DB_PASSWORD: ${GAME_DB_PASSWORD:?set GAME_DB_PASSWORD in .env}
+  INFO_HOST: ${INFO_HOST:-127.0.0.1}
+  INFO_PORT: ${INFO_PORT:-11985}
+
+x-game: &game
+  <<: *server
+  stop_grace_period: 90s
+  healthcheck:
+    test: ["CMD-SHELL", "/opt/tales/connected.sh \"$${GATE_GAME_PORT}\""]
+    interval: 5s
+    timeout: 3s
+    retries: 12
+    start_period: 180s
+
+services:
+  postgres:
+    profiles: ["host1"]
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD:
+    ports:
+      - "${POSTGRES_PUBLISHED_IP:-127.0.0.1}:${POSTGRES_PUBLISHED_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD", "pg_isready", "--host", "127.0.0.1", "--username", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+  db-init:
+    profiles: ["host1"]
+    image: *image
+    platform: linux/386
+    entrypoint: ["/opt/tales/db-init.sh"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: ${DB_HOST:-postgres}
+      DB_PORT: ${DB_PORT:-5432}
+      POSTGRES_PASSWORD:
+      ACCOUNT_DB_NAME: ${ACCOUNT_DB_NAME:-AccountServer}
+      ACCOUNT_DB_USER: ${ACCOUNT_DB_USER:-pko_account}
+      ACCOUNT_DB_PASSWORD:
+      GAME_DB_NAME: ${GAME_DB_NAME:-GameDB}
+      GAME_DB_USER: ${GAME_DB_USER:-pko_game}
+      GAME_DB_PASSWORD: ${GAME_DB_PASSWORD:?set GAME_DB_PASSWORD in .env}
+
+  account:
+    <<: *server
+    profiles: ["host1"]
+    command: ["AccountServer"]
+    stop_grace_period: 30s
+    environment:
+      ACCOUNT_LISTEN_IP: ${ACCOUNT_LISTEN_IP:-0.0.0.0}
+      ACCOUNT_PORT: ${ACCOUNT_PORT:-1978}
+      DB_HOST: ${DB_HOST:-postgres}
+      DB_PORT: ${DB_PORT:-5432}
+      ACCOUNT_DB_NAME: ${ACCOUNT_DB_NAME:-AccountServer}
+      ACCOUNT_DB_USER: ${ACCOUNT_DB_USER:-pko_account}
+      ACCOUNT_DB_PASSWORD:
+      GROUP_NAME: ${GROUP_NAME:-GroupServerAndor2}
+      GROUP_ACCOUNT_PASSWORD:
+    volumes:
+      - account-log:/var/log/tales/AccountServer
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/$${ACCOUNT_PORT}"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+
+  group:
+    <<: *server
+    profiles: ["host1"]
+    command: ["GroupServer"]
+    stop_grace_period: 30s
+    environment:
+      GROUP_NAME: ${GROUP_NAME:-GroupServerAndor2}
+      GROUP_LISTEN_IP: ${GROUP_LISTEN_IP:-0.0.0.0}
+      GROUP_PORT: ${GROUP_PORT:-1975}
+      GROUP_ACCOUNT_PASSWORD:
+      ACCOUNT_HOST: ${ACCOUNT_HOST:-account}
+      ACCOUNT_PORT: ${ACCOUNT_PORT:-1978}
+      DB_HOST: ${DB_HOST:-postgres}
+      DB_PORT: ${DB_PORT:-5432}
+      GAME_DB_NAME: ${GAME_DB_NAME:-GameDB}
+      GAME_DB_USER: ${GAME_DB_USER:-pko_game}
+      GAME_DB_PASSWORD: ${GAME_DB_PASSWORD:?set GAME_DB_PASSWORD in .env}
+    volumes:
+      - group-log:/var/log/tales/GroupServer
+      - ./content/GroupServer/resource:/opt/tales/GroupServer/resource:ro
+      - ./content/GroupServer/ChaNameFilter.txt:/opt/tales/GroupServer/ChaNameFilter.txt:ro
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/tales/listening.sh \"$${GROUP_PORT}\""]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+
+  gate:
+    <<: *server
+    profiles: ["host1"]
+    command: ["GateServer"]
+    stop_grace_period: 30s
+    environment:
+      GROUP_HOST: ${GROUP_HOST:-group}
+      GROUP_PORT: ${GROUP_PORT:-1975}
+      GATE_CLIENT_LISTEN_IP: ${GATE_CLIENT_LISTEN_IP:-0.0.0.0}
+      GATE_CLIENT_PORT: ${GATE_CLIENT_PORT:-1973}
+      GATE_GAME_LISTEN_IP: ${GATE_GAME_LISTEN_IP:-0.0.0.0}
+      GATE_GAME_PORT: ${GATE_GAME_PORT:-1971}
+      GATE_SHOWRANGE: ${GATE_SHOWRANGE:-1}
+    ports:
+      - "${GATE_PUBLISHED_PORT:-1973}:${GATE_CLIENT_PORT:-1973}"
+      - "${GATE_SHOWRANGE_PUBLISHED_PORT:-1976}:1976/udp"
+      - "${GATE_GAME_PUBLISHED_IP:-127.0.0.1}:${GATE_GAME_PORT:-1971}:${GATE_GAME_PORT:-1971}"
+    volumes:
+      - gate-log:/var/log/tales/GateServer
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/tales/listening.sh \"$${GATE_CLIENT_PORT}\""]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+
+  game00:
+    <<: *game
+    profiles: ["host1"]
+    command: ["GameServer", "GameServer00.cfg"]
+    environment:
+      <<: *game-environment
+      GAME00_INFO_PASSWORD:
+    volumes:
+      - game00-log:/var/log/tales/GameServer
+      - ./templates/game00:/opt/tales/templates/GameServer:ro
+      - ./content/GameServer/resource:/opt/tales/GameServer/resource:ro
+      - ./content/GameServer/addons:/opt/tales/GameServer/addons:ro
+      - ./content/GameServer/cmd.cfg:/opt/tales/GameServer/cmd.cfg:ro
+
+  game01:
+    <<: *game
+    profiles: ["host2"]
+    command: ["GameServer", "GameServer01.cfg"]
+    environment:
+      <<: *game-environment
+      GAME01_INFO_PASSWORD:
+    volumes:
+      - game01-log:/var/log/tales/GameServer
+      - ./templates/game01:/opt/tales/templates/GameServer:ro
+      - ./content/GameServer/resource:/opt/tales/GameServer/resource:ro
+      - ./content/GameServer/addons:/opt/tales/GameServer/addons:ro
+      - ./content/GameServer/cmd.cfg:/opt/tales/GameServer/cmd.cfg:ro
+
+  game02:
+    <<: *game
+    profiles: ["host2"]
+    command: ["GameServer", "GameServer02.cfg"]
+    environment:
+      <<: *game-environment
+      GAME02_INFO_PASSWORD:
+    volumes:
+      - game02-log:/var/log/tales/GameServer
+      - ./templates/game02:/opt/tales/templates/GameServer:ro
+      - ./content/GameServer/resource:/opt/tales/GameServer/resource:ro
+      - ./content/GameServer/addons:/opt/tales/GameServer/addons:ro
+      - ./content/GameServer/cmd.cfg:/opt/tales/GameServer/cmd.cfg:ro
+
+  game03:
+    <<: *game
+    profiles: ["host1"]
+    command: ["GameServer", "GameServer03.cfg"]
+    environment:
+      <<: *game-environment
+      GAME03_INFO_PASSWORD:
+    volumes:
+      - game03-log:/var/log/tales/GameServer
+      - ./templates/game03:/opt/tales/templates/GameServer:ro
+      - ./content/GameServer/resource:/opt/tales/GameServer/resource:ro
+      - ./content/GameServer/addons:/opt/tales/GameServer/addons:ro
+      - ./content/GameServer/cmd.cfg:/opt/tales/GameServer/cmd.cfg:ro
+
+volumes:
+  pgdata:
+  account-log:
+  group-log:
+  gate-log:
+  game00-log:
+  game01-log:
+  game02-log:
+  game03-log:

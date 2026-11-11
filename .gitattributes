@@ -1,0 +1,11 @@
+* text=auto
+
+*.sh text eol=lf
+*.template text eol=lf
+Dockerfile text eol=lf
+.dockerignore text eol=lf
+compose.yaml text eol=lf
+.env.example text eol=lf
+
+content/** -text
+client/** -text
