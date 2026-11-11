@@ -2,6 +2,7 @@ name: Content check
 
 on:
   push:
+    branches: [main]
   pull_request:
 
 permissions:
