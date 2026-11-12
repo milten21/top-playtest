@@ -17,6 +17,10 @@ git fetch --quiet origin
 previous=$(cat ~/.tales-deployed 2>/dev/null || true)
 git checkout --quiet --detach "$1"
 echo "checked out $(git rev-parse HEAD)"
+sudo install -m 644 systemd/* /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --quiet nightly-reboot.timer tales-up.service
+sudo systemctl restart nightly-reboot.timer
 changed=$(git diff --name-only "$previous" HEAD 2>/dev/null) || changed=
 if [ -n "$changed" ] && ! grep -qv '^web/signup/' <<<"$changed"; then
   if grep -qx signup <<<"$(docker compose config --services)"; then

@@ -1,0 +1,8 @@
+[Unit]
+Description=Nightly reboot with restart notice
+After=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/ubuntu/tales
+ExecStart=/usr/bin/flock /home/ubuntu/.tales-deploy.lock sh -c 'scripts/announce-restart.sh 15m 10m 5m 1m; docker compose stop $$(docker compose config --services | grep ^game); docker compose stop; systemctl reboot'

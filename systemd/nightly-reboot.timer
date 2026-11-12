@@ -1,0 +1,9 @@
+[Unit]
+Description=Nightly reboot at 03:45 UTC with restart notice
+
+[Timer]
+OnCalendar=*-*-* 03:45:00 UTC
+AccuracySec=1s
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,14 @@
+[Unit]
+Description=Start the Tales stack after boot
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=ubuntu
+WorkingDirectory=/home/ubuntu/tales
+ExecStart=/usr/bin/docker compose up --detach
+
+[Install]
+WantedBy=multi-user.target

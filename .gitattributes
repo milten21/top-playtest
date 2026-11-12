@@ -6,6 +6,7 @@ Dockerfile text eol=lf
 .dockerignore text eol=lf
 compose.yaml text eol=lf
 .env.example text eol=lf
+systemd/** text eol=lf
 
 content/** -text
 client/** -text
