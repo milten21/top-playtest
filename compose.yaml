@@ -1,7 +1,7 @@
 name: tales
 
 x-server: &server
-  image: &image ghcr.io/milten21/top/server:sha-edf6922
+  image: &image ghcr.io/milten21/top/server:sha-e3f0014
   platform: linux/386
   restart: unless-stopped
   stdin_open: true
