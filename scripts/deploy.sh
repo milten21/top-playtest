@@ -10,6 +10,8 @@ printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
 
 ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=yes "$DEPLOY_USER@$DEPLOY_HOST" bash -s -- "$GITHUB_SHA" <<'EOF'
 set -euo pipefail
+exec 9>>~/.tales-deploy.lock
+flock 9
 cd ~/tales
 git fetch --quiet origin
 previous=$(cat ~/.tales-deployed 2>/dev/null || true)
@@ -22,8 +24,10 @@ if [ -n "$changed" ] && ! grep -qv '^web/signup/' <<<"$changed"; then
   fi
 else
   docker compose pull --quiet
+  docker compose build
+  scripts/announce-restart.sh 1m 30s
   docker compose stop
-  docker compose up --detach --build --wait --wait-timeout 600 --remove-orphans || { docker compose ps --all; exit 1; }
+  docker compose up --detach --wait --wait-timeout 600 --remove-orphans || { docker compose ps --all; exit 1; }
 fi
 git rev-parse HEAD > ~/.tales-deployed
 docker compose ps

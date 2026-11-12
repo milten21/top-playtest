@@ -40,7 +40,8 @@ jobs:
           DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
 
   deploy-host2:
-    needs: deploy-host1
+    needs: content-check
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
