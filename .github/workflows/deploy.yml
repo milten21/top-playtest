@@ -20,6 +20,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - run: scripts/announce-restart.test.sh
+
       - run: scripts/content-check.sh
 
   deploy-host1:

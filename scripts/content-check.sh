@@ -90,6 +90,16 @@ for game in "${game_servers[@]}"; do
     pass "$game is registered with GateServer with maps [$maps]"
 done
 
+notice_errors=$(COMPOSE_PROJECT_NAME="$project" COMPOSE_ENV_FILES="$env_file" scripts/announce-restart.sh 1s 2>&1) || fail "announce-restart.sh runs, got:
+$notice_errors"
+[ -z "$notice_errors" ] || fail "announce-restart.sh writes the notice into game00, got:
+$notice_errors"
+notice_consumed() {
+    "${compose[@]}" exec -T game00 sh -c '! test -e /tmp/restart-notice'
+}
+wait_for 15 notice_consumed || fail "game00 broadcasts and removes the restart notice"
+pass "game00 broadcasts and removes the restart notice"
+
 for game in "${game_servers[@]}"; do
     errors=$("${compose[@]}" exec -T "$game" sh -c 'cat "$1" 2>/dev/null || true' _ "$game_log/GameServer${game#game}/error.log")
     [ -z "$errors" ] || fail "$game logs no errors during startup, got:
