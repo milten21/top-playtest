@@ -114,6 +114,7 @@ services:
       GAME_DB_PASSWORD: ${GAME_DB_PASSWORD:?set GAME_DB_PASSWORD in .env}
     volumes:
       - group-log:/var/log/tales/GroupServer
+      - ./templates/group:/opt/tales/templates/GroupServer:ro
       - ./content/GroupServer/resource:/opt/tales/GroupServer/resource:ro
       - ./content/GroupServer/ChaNameFilter.txt:/opt/tales/GroupServer/ChaNameFilter.txt:ro
     healthcheck:

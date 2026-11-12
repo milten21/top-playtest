@@ -202,6 +202,7 @@ function BanPlayer(role, player)
 end
 
 function SummonMonster(role, monster_id, count)
+    count = math.min(count, 10)
     local x, y = GetChaPos(role)
     local r = math.random(0, 360)
     for i = 1, count, 1 do

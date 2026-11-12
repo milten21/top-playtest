@@ -83,7 +83,7 @@ cmd.canexecute = function(role, name, param)
 end
 
 cmd.list['make'] = {
-	gm 		= 99,
+	gm 		= 10,
 	param 	= {'number','number','number','number'},
 	func 	= function(role, param) GiveItem(role, 0, param[1], param[2], 4, param[3], param[4]) end
 } cmd.list['give'] = cmd.list['make']
@@ -95,26 +95,26 @@ cmd.list['shout'] = {
 }
 
 cmd.list['gmlv'] = {
-	gm 		= 99,
+	gm 		= 10,
 	param 	= {},
 	func 	= function(role, param) BickerNotice(role, 'Account: '..GetActName(role)..' GM Level '..GetGmLv(role)) end
 }
 
 cmd.list['online'] = {
-	gm 		= 99,
+	gm 		= 10,
 	param 	= {},
 	func 	= function(role, param) SystemNotice(role, 'Players Online: '..GetOnlineCount()) end
 } cmd.list['onlinecount'] = cmd.list['online']
 
 
 cmd.list['date'] = {
-	gm 		= 99,
+	gm 		= 10,
 	param 	= {},
 	func 	= function(role, param) BickerNotice(role, 'Server Date: '..os.date('%b')..'. '..os.date('%d')..', 20'..os.date('%y')) end
 }
 
 cmd.list['time'] = {
-	gm 		= 99,
+	gm 		= 10,
 	param 	= {},
 	func 	= function(role, param) BickerNotice(role, 'Server Time: '..os.date('%H')..':'..os.date('%M')..':'..os.date('%S')) end
 }
@@ -126,67 +126,67 @@ cmd.list['setgm'] = {
 }
 
 cmd.list['change'] = {
-	gm 		= 99,
+	gm 		= 10,
 	param 	= {"number"},
 	func 	= function(role, param) TransformCha(role, param[1]) end
 }
 
 cmd.list['bank'] = {
-	gm 		= 99,
+	gm 		= 10,
 	param 	= {},
 	func 	= function(role, param) OpenBank(role, role) end
 }
 
 cmd.list['forge'] = {
-	gm 		= 99,
+	gm 		= 10,
 	param 	= {},
 	func 	= function(role, param) OpenForge(role, role) end
 }
 
 cmd.list['socket'] = {
-	gm 		= 99,
+	gm 		= 10,
 	param 	= {},
 	func 	= function(role, param) OpenMilling(role, role) end
 } cmd.list['milling'] = cmd.list['socket']
 
 cmd.list['fusion'] = {
-	gm 		= 99,
+	gm 		= 10,
 	param 	= {},
 	func 	= function(role, param) OpenFusion(role, role) end
 }
 
 cmd.list['strengthening'] = {
-	gm = 99,
+	gm = 10,
 	param = {},
 	func = function(role, param) OpenUpgrade(role, role) end
 }
 
 cmd.list['upgrade'] = {
-	gm 		= 99,
+	gm 		= 10,
 	param 	= {},
 	func 	= function(role, param) OpenItemTiChun(role, role) end
 }
 
 cmd.list['recharge'] = {
-	gm 		= 99,
+	gm 		= 10,
 	param 	= {},
 	func 	= function(role, param) OpenItemEnergy(role, role) end
 }
 
 cmd.list['extract'] = {
-	gm 		= 99,
+	gm 		= 10,
 	param 	= {},
 	func 	= function(role, param) OpenGetStone(role, role) end
 }
 
 cmd.list['combine'] = {
-	gm 		= 99,
+	gm 		= 10,
 	param 	= {},
 	func 	= function(role, param) OpenUnite(role, role) end
 }
 
 cmd.list['getcrystals'] = {
-	gm 		= 99,
+	gm 		= 10,
 	param 	= {},
 	func 	= function(role, param) GiveIMP(role, 9999) end
 }
@@ -210,38 +210,38 @@ cmd.list['setstock'] = {
 }
 
 cmd.list['fairy'] = {
-	gm 		= 99,
+	gm 		= 10,
 	param 	= {},
 	func 	= function(role, param) OpenEidolonMetempsychosis(role, role) end
 } cmd.list['elf'] = cmd.list['fairy']
 
 cmd.list['tiger'] = {
-	gm 		= 99,
+	gm 		= 10,
 	param 	= {},
 	func 	= function(role, param) OpenTiger(role, role) end
 } cmd.list['lottery'] = cmd.list['tiger']
 
 cmd.list['buff'] = {
-	gm 		= 29,
+	gm 		= 10,
 	param 	= {},
 	func 	= function(role, param) FullBuffs(role) end
 }
 
 cmd.list['clear'] = {
-	gm 		= 99,
+	gm 		= 10,
 	param 	= {"number"},
 	func 	= function(role, param) ClearSlots(role, param[1]) end
 }
 
 cmd.list["senditem"] = {
-	gm 		= 99,
+	gm 		= 10,
 	param 	= {'string','number','number','number'},
 	func	= function(role, param) SendItem(role, param[1], param[2], param[3], param[4])
 end
 }
 
 cmd.list["gmforge"] = {
-	gm 		= 99,
+	gm 		= 10,
 	param 	= {'number','number','number','number','number','number','number','number','number'},
 	func	= function(role, param) MakeForgedItems(role, param[1],  param[2], param[3], param[4], param[5], param[6], param[7], param[8], param[9])
 end
@@ -269,7 +269,7 @@ end
 }
 
 cmd.list["summon"] = {
-	gm 		= 99,
+	gm 		= 10,
 	param 	= {'number','number'},
 	func	= function(role, param) SummonMonster(role, param[1],param[2])
 end
@@ -288,7 +288,7 @@ cmd.list['close'] = {
 }
 
 cmd.list["eff"] = {
-	gm 		= 99,
+	gm 		= 10,
 	param 	= {'number'},
 	func	= function(role, param) PlayEffect(role, param[1])
 end
