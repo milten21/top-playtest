@@ -149,6 +149,22 @@ services:
       retries: 12
       start_period: 10s
 
+  signup:
+    profiles: ["signup"]
+    build: web/signup
+    restart: unless-stopped
+    environment:
+      DB_HOST: ${DB_HOST:-postgres}
+      DB_PORT: ${DB_PORT:-5432}
+      ACCOUNT_DB_NAME: ${ACCOUNT_DB_NAME:-AccountServer}
+      ACCOUNT_DB_USER: ${ACCOUNT_DB_USER:-pko_account}
+      ACCOUNT_DB_PASSWORD:
+      GAME_DB_NAME: ${GAME_DB_NAME:-GameDB}
+      GAME_DB_USER: ${GAME_DB_USER:-pko_game}
+      GAME_DB_PASSWORD: ${GAME_DB_PASSWORD:?set GAME_DB_PASSWORD in .env}
+    ports:
+      - "80:8080"
+
   game00:
     <<: *game
     profiles: ["host1"]

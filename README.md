@@ -6,4 +6,6 @@ To run a host, copy `.env.example` to `.env`, set the passwords and set `COMPOSE
 
 To run the whole server on one host, set `COMPOSE_PROFILES=host1,host2`.
 
+On host #1 of the playtest, set `COMPOSE_PROFILES=host1,signup` to also run the signup page.
+
 To upgrade the engine, change the image tag in `compose.yaml`.
